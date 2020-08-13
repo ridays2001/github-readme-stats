@@ -47,7 +47,8 @@ module.exports = async (req, res) => {
     CONSTANTS.ONE_DAY
   );
 
-  res.setHeader("Cache-Control", `public, max-age=${cacheSeconds}`);
+  if (username === 'ridays2001') res.setHeader('Cache-Control', 'public, max-age=900');
+  else res.setHeader('Cache-Control', `public, max-age=${cacheSeconds}`);
 
   res.send(
     renderStatsCard(stats, {
