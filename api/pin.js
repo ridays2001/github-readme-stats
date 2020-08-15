@@ -1,65 +1,42 @@
-require("dotenv").config();
-const {
-  renderError,
-  parseBoolean,
-  clampValue,
-  CONSTANTS,
-} = require("../src/common/utils");
-const fetchRepo = require("../src/fetchers/repo-fetcher");
-const renderRepoCard = require("../src/cards/repo-card");
+require('dotenv').config();
+
+const { renderError, parseBoolean } = require('../src/common/utils');
+const fetchRepo = require('../src/fetchers/repo-fetcher');
+const renderRepoCard = require('../src/cards/repo-card');
 
 module.exports = async (req, res) => {
-  const {
-    username,
-    repo,
-    title_color,
-    icon_color,
-    text_color,
-    bg_color,
-    theme,
-    show_owner,
-    cache_seconds,
-  } = req.query;
+	const {
+		username,
+		repo,
+		title_color,
+		icon_color,
+		text_color,
+		bg_color,
+		theme,
+		show_owner
+	} = req.query;
 
-  let repoData;
+	let repoData;
 
-  res.setHeader("Content-Type", "image/svg+xml");
+	res.setHeader('Content-Type', 'image/svg+xml');
 
-  try {
-    repoData = await fetchRepo(username, repo);
-  } catch (err) {
-    return res.send(renderError(err.message, err.secondaryMessage));
-  }
+	try {
+		repoData = await fetchRepo(username, repo);
 
-  let cacheSeconds = clampValue(
-    parseInt(cache_seconds || CONSTANTS.THIRTY_MINUTES, 10),
-    CONSTANTS.THIRTY_MINUTES,
-    CONSTANTS.ONE_DAY
-  );
+		if (username === 'ridays2001') res.setHeader('Cache-Control', `public, max-age=1800`);
+		else res.setHeader('Cache-Control', `public, max-age=86400`);
 
-  /*
-    if star count & fork count is over 1k then we are kFormating the text
-    and if both are zero we are not showing the stats
-    so we can just make the cache longer, since there is no need to frequent updates
-  */
-  const stars = repoData.stargazers.totalCount;
-  const forks = repoData.forkCount;
-  const isBothOver1K = stars > 1000 && forks > 1000;
-  const isBothUnder1 = stars < 1 && forks < 1;
-  if (!cache_seconds && (isBothOver1K || isBothUnder1)) {
-    cacheSeconds = CONSTANTS.TWO_HOURS;
-  }
-
-  res.setHeader("Cache-Control", `public, max-age=${cacheSeconds}`);
-
-  res.send(
-    renderRepoCard(repoData, {
-      title_color,
-      icon_color,
-      text_color,
-      bg_color,
-      theme,
-      show_owner: parseBoolean(show_owner),
-    })
-  );
+		return res.send(
+			renderRepoCard(repoData, {
+				title_color,
+				icon_color,
+				text_color,
+				bg_color,
+				theme,
+				show_owner: parseBoolean(show_owner),
+			})
+		);
+	} catch (err) {
+		return res.send(renderError(err.message, err.secondaryMessage));
+	}
 };
