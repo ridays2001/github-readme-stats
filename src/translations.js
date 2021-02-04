@@ -1,3 +1,4 @@
+// cSpell: disable
 const { encodeHTML } = require('./common/utils');
 
 const statCardLocales = ({ name, apostrophe }) => {
@@ -32,7 +33,7 @@ const statCardLocales = ({ name, apostrophe }) => {
       de: 'Sterne Insgesamt',
       en: 'Total Stars',
       es: 'Estrellas totales',
-      fr: 'Total d'étoiles',
+      fr: 'Total d\'étoiles',
       hu: 'Csillagok',
       it: 'Stelle totali',
       ja: 'スターされた数',
@@ -85,7 +86,7 @@ const statCardLocales = ({ name, apostrophe }) => {
       it: 'PR totali',
       ja: '合計 PR',
       kr: 'PR 횟수',
-      nl: 'Totale PR's',
+      nl: 'Totale PR\'s',
       'pt-pt': 'Total de PRs',
       'pt-br': 'Total de PRs',
       np: 'कुल PRs',
@@ -104,7 +105,7 @@ const statCardLocales = ({ name, apostrophe }) => {
       de: 'Anzahl Issues',
       en: 'Total Issues',
       es: 'Problemas totales',
-      fr: 'Nombre total d'incidents',
+      fr: 'Nombre total d\'incidents',
       hu: 'Összes hibajegy',
       it: 'Segnalazioni totali',
       ja: '合計 issue',
@@ -267,7 +268,7 @@ const wakatimeCardLocales = {
     'pt-pt': 'Sem atividade esta semana',
     'pt-br': 'Nenhuma atividade de codificação esta semana',
     np: 'यस हप्ता कुनै कोडिंग गतिविधि छैन',
-    el: 'Δεν υπάρχει δραστηριότητα κώδικα γι' αυτή την εβδομάδα',
+    el: 'Δεν υπάρχει δραστηριότητα κώδικα γι\' αυτή την εβδομάδα',
     ru: 'На этой неделе не было активности',
     'uk-ua': 'На цьому тижні не було активності',
     id: 'Tidak ada aktivitas perkodingan minggu ini',
