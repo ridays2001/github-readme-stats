@@ -21,12 +21,18 @@ module.exports = async (req, res) => {
     text_color,
     bg_color,
     theme,
-    layout
+    layout,
+    langs_count,
+    exclude_repo,
+    custom_title,
+    locale,
   } = req.query;
   let topLangs;
 
+  res.setHeader('Content-Type', 'image/svg+xml');
+
   if (blacklist.includes(username)) {
-    return res.send(renderError('DENIED'));
+    return res.send(renderError('Something went wrong'));
   }
 
   if (locale && !isLocaleAvailable(locale)) {
@@ -61,4 +67,4 @@ module.exports = async (req, res) => {
   } catch (err) {
     return res.send(renderError(err.message, err.secondaryMessage));
   }
-}
+};
