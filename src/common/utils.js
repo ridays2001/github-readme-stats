@@ -41,16 +41,6 @@ function isValidHexColor(hexColor) {
   ).test(hexColor);
 }
 
-function parseBoolean(value) {
-  if (value === 'true') {
-    return true;
-  } else if (value === 'false') {
-    return false;
-  } else {
-    return value;
-  }
-}
-
 const parseBoolean = value => {
 	if (value === 'true') return true;
 	if (value === 'false') return false;
