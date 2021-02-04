@@ -1,13 +1,13 @@
-require("@testing-library/jest-dom");
-const axios = require("axios");
-const MockAdapter = require("axios-mock-adapter");
-const api = require("../api/index");
-const renderStatsCard = require("../src/cards/stats-card");
-const { renderError, CONSTANTS } = require("../src/common/utils");
-const calculateRank = require("../src/calculateRank");
+require('@testing-library/jest-dom');
+const axios = require('axios');
+const MockAdapter = require('axios-mock-adapter');
+const api = require('../api/index');
+const renderStatsCard = require('../src/cards/stats-card');
+const { renderError, CONSTANTS } = require('../src/common/utils');
+const calculateRank = require('../src/calculateRank');
 
 const stats = {
-  name: "Anurag Hazra",
+  name: 'Anurag Hazra',
   totalStars: 100,
   totalCommits: 200,
   totalIssues: 300,
@@ -48,10 +48,10 @@ const data = {
 const error = {
   errors: [
     {
-      type: "NOT_FOUND",
-      path: ["user"],
+      type: 'NOT_FOUND',
+      path: ['user'],
       locations: [],
-      message: "Could not fetch user",
+      message: 'Could not fetch user',
     },
   ],
 };
@@ -61,7 +61,7 @@ const mock = new MockAdapter(axios);
 const faker = (query, data) => {
   const req = {
     query: {
-      username: "anuraghazra",
+      username: 'anuraghazra',
       ...query,
     },
   };
@@ -69,7 +69,7 @@ const faker = (query, data) => {
     setHeader: jest.fn(),
     send: jest.fn(),
   };
-  mock.onPost("https://api.github.com/graphql").reply(200, data);
+  mock.onPost('https://api.github.com/graphql').reply(200, data);
 
   return { req, res };
 };
@@ -78,93 +78,93 @@ afterEach(() => {
   mock.reset();
 });
 
-describe("Test /api/", () => {
-  it("should test the request", async () => {
+describe('Test /api/', () => {
+  it('should test the request', async () => {
     const { req, res } = faker({}, data);
 
     await api(req, res);
 
-    expect(res.setHeader).toBeCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toBeCalledWith('Content-Type', 'image/svg+xml');
     expect(res.send).toBeCalledWith(renderStatsCard(stats, { ...req.query }));
   });
 
-  it("should render error card on error", async () => {
+  it('should render error card on error', async () => {
     const { req, res } = faker({}, error);
 
     await api(req, res);
 
-    expect(res.setHeader).toBeCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toBeCalledWith('Content-Type', 'image/svg+xml');
     expect(res.send).toBeCalledWith(
       renderError(
         error.errors[0].message,
-        "Make sure the provided username is not an organization"
-      )
+        'Make sure the provided username is not an organization',
+      ),
     );
   });
 
-  it("should get the query options", async () => {
+  it('should get the query options', async () => {
     const { req, res } = faker(
       {
-        username: "anuraghazra",
-        hide: "issues,prs,contribs",
+        username: 'anuraghazra',
+        hide: 'issues,prs,contribs',
         show_icons: true,
         hide_border: true,
         line_height: 100,
-        title_color: "fff",
-        icon_color: "fff",
-        text_color: "fff",
-        bg_color: "fff",
+        title_color: 'fff',
+        icon_color: 'fff',
+        text_color: 'fff',
+        bg_color: 'fff',
       },
-      data
+      data,
     );
 
     await api(req, res);
 
-    expect(res.setHeader).toBeCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toBeCalledWith('Content-Type', 'image/svg+xml');
     expect(res.send).toBeCalledWith(
       renderStatsCard(stats, {
-        hide: ["issues", "prs", "contribs"],
+        hide: ['issues', 'prs', 'contribs'],
         show_icons: true,
         hide_border: true,
         line_height: 100,
-        title_color: "fff",
-        icon_color: "fff",
-        text_color: "fff",
-        bg_color: "fff",
-      })
+        title_color: 'fff',
+        icon_color: 'fff',
+        text_color: 'fff',
+        bg_color: 'fff',
+      }),
     );
   });
 
-  it("should have proper cache", async () => {
+  it('should have proper cache', async () => {
     const { req, res } = faker({}, data);
-    mock.onPost("https://api.github.com/graphql").reply(200, data);
+    mock.onPost('https://api.github.com/graphql').reply(200, data);
 
     await api(req, res);
 
     expect(res.setHeader.mock.calls).toEqual([
-      ["Content-Type", "image/svg+xml"],
-      ["Cache-Control", `public, max-age=${CONSTANTS.THIRTY_MINUTES}`],
+      ['Content-Type', 'image/svg+xml'],
+      ['Cache-Control', `public, max-age=${CONSTANTS.TWO_HOURS}`],
     ]);
   });
 
-  it("should set proper cache", async () => {
-    const { req, res } = faker({ cache_seconds: 2000 }, data);
+  it('should set proper cache', async () => {
+    const { req, res } = faker({ cache_seconds: 8000 }, data);
     await api(req, res);
 
     expect(res.setHeader.mock.calls).toEqual([
-      ["Content-Type", "image/svg+xml"],
-      ["Cache-Control", `public, max-age=${2000}`],
+      ['Content-Type', 'image/svg+xml'],
+      ['Cache-Control', `public, max-age=${8000}`],
     ]);
   });
 
-  it("should set proper cache with clamped values", async () => {
+  it('should set proper cache with clamped values', async () => {
     {
       let { req, res } = faker({ cache_seconds: 200000 }, data);
       await api(req, res);
 
       expect(res.setHeader.mock.calls).toEqual([
-        ["Content-Type", "image/svg+xml"],
-        ["Cache-Control", `public, max-age=${CONSTANTS.ONE_DAY}`],
+        ['Content-Type', 'image/svg+xml'],
+        ['Cache-Control', `public, max-age=${CONSTANTS.ONE_DAY}`],
       ]);
     }
 
@@ -174,8 +174,8 @@ describe("Test /api/", () => {
       await api(req, res);
 
       expect(res.setHeader.mock.calls).toEqual([
-        ["Content-Type", "image/svg+xml"],
-        ["Cache-Control", `public, max-age=${CONSTANTS.THIRTY_MINUTES}`],
+        ['Content-Type', 'image/svg+xml'],
+        ['Cache-Control', `public, max-age=${CONSTANTS.TWO_HOURS}`],
       ]);
     }
 
@@ -184,24 +184,24 @@ describe("Test /api/", () => {
       await api(req, res);
 
       expect(res.setHeader.mock.calls).toEqual([
-        ["Content-Type", "image/svg+xml"],
-        ["Cache-Control", `public, max-age=${CONSTANTS.THIRTY_MINUTES}`],
+        ['Content-Type', 'image/svg+xml'],
+        ['Cache-Control', `public, max-age=${CONSTANTS.TWO_HOURS}`],
       ]);
     }
   });
 
-  it("should add private contributions", async () => {
+  it('should add private contributions', async () => {
     const { req, res } = faker(
       {
-        username: "anuraghazra",
+        username: 'anuraghazra',
         count_private: true,
       },
-      data
+      data,
     );
 
     await api(req, res);
 
-    expect(res.setHeader).toBeCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toBeCalledWith('Content-Type', 'image/svg+xml');
     expect(res.send).toBeCalledWith(
       renderStatsCard(
         {
@@ -217,8 +217,8 @@ describe("Test /api/", () => {
             issues: stats.totalIssues,
           }),
         },
-        {}
-      )
+        {},
+      ),
     );
   });
 });

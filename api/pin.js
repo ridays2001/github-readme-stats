@@ -1,42 +1,59 @@
 require('dotenv').config();
-
-const { renderError, parseBoolean } = require('../src/common/utils');
+const {
+  renderError,
+  parseBoolean,
+  CONSTANTS,
+} = require('../src/common/utils');
 const fetchRepo = require('../src/fetchers/repo-fetcher');
 const renderRepoCard = require('../src/cards/repo-card');
+const blacklist = require('../src/common/blacklist');
+const { isLocaleAvailable } = require('../src/translations');
 
 module.exports = async (req, res) => {
-	const {
-		username,
-		repo,
-		title_color,
-		icon_color,
-		text_color,
-		bg_color,
-		theme,
-		show_owner
-	} = req.query;
+  const {
+    username,
+    repo,
+    hide_border,
+    title_color,
+    icon_color,
+    text_color,
+    bg_color,
+    theme,
+    show_owner,
+    locale,
+  } = req.query;
 
-	let repoData;
+  let repoData;
 
-	res.setHeader('Content-Type', 'image/svg+xml');
+  res.setHeader('Content-Type', 'image/svg+xml');
 
-	try {
-		repoData = await fetchRepo(username, repo);
+  if (blacklist.includes(username)) {
+    return res.send(renderError('DENIED'));
+  }
 
-		if (username === 'ridays2001') res.setHeader('Cache-Control', `public, max-age=1800`);
-		else res.setHeader('Cache-Control', `public, max-age=86400`);
+  if (locale && !isLocaleAvailable(locale)) {
+    return res.send(renderError('Something went wrong', 'Language not found'));
+  }
 
-		return res.send(
-			renderRepoCard(repoData, {
-				title_color,
-				icon_color,
-				text_color,
-				bg_color,
-				theme,
-				show_owner: parseBoolean(show_owner),
-			})
-		);
-	} catch (err) {
-		return res.send(renderError(err.message, err.secondaryMessage));
-	}
+  try {
+    repoData = await fetchRepo(username, repo);
+
+    if (username === 'ridays2001') res.setHeader('Cache-Control', 'public, max-age=900');
+    else res.setHeader('Cache-Control', `public, max-age=${CONSTANTS.ONE_DAY}`);
+
+    return res.send(
+      renderRepoCard(repoData, {
+        hide_border,
+        title_color,
+        icon_color,
+        text_color,
+        bg_color,
+        theme,
+        show_owner: parseBoolean(show_owner),
+        locale: locale ? locale.toLowerCase() : null,
+      }),
+    );
+  } catch (err) {
+    return res.send(renderError(err.message, err.secondaryMessage));
+  }
 };

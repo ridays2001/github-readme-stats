@@ -1,37 +1,36 @@
-const { getCardColors, FlexLayout, clampValue } = require("../common/utils");
-const Card = require("../common/Card");
+const Card = require('../common/Card');
+const { getCardColors, FlexLayout } = require('../common/utils');
+const { createProgressNode } = require('../common/createProgressNode');
+const { langCardLocales } = require('../translations');
+const I18n = require('../common/I18n');
 
-const createProgressNode = ({ width, color, name, progress }) => {
+const createProgressTextNode = ({ width, color, name, progress }) => {
   const paddingRight = 95;
   const progressTextX = width - paddingRight + 10;
   const progressWidth = width - paddingRight;
-  const progressPercentage = clampValue(progress, 2, 100);
 
   return `
-    <text data-testid="lang-name" x="2" y="15" class="lang-name">${name}</text>
-    <text x="${progressTextX}" y="34" class="lang-name">${progress}%</text>
-    <svg width="${progressWidth}">
-      <rect rx="5" ry="5" x="0" y="25" width="${progressWidth}" height="8" fill="#ddd"></rect>
-      <rect
-        height="8"
-        fill="${color}"
-        rx="5" ry="5" x="0" y="25"
-        data-testid="lang-progress"
-        width="${progressPercentage}%"
-      >
-      </rect>
-    </svg>
+    <text data-testid='lang-name' x='2' y='15' class='lang-name'>${name}</text>
+    <text x='${progressTextX}' y='34' class='lang-name'>${progress}%</text>
+    ${createProgressNode({
+      x: 0,
+      y: 25,
+      color,
+      width: progressWidth,
+      progress,
+      progressBarBackgroundColor: '#ddd',
+    })}
   `;
 };
 
 const createCompactLangNode = ({ lang, totalSize, x, y }) => {
   const percentage = ((lang.size / totalSize) * 100).toFixed(2);
-  const color = lang.color || "#858585";
+  const color = lang.color || '#858585';
 
   return `
-    <g transform="translate(${x}, ${y})">
-      <circle cx="5" cy="6" r="5" fill="${color}" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
+    <g transform='translate(${x}, ${y})'>
+      <circle cx='5' cy='6' r='5' fill='${color}' />
+      <text data-testid='lang-name' x='15' y='10' class='lang-name'>
         ${lang.name} ${percentage}%
       </text>
     </g>
@@ -72,7 +71,14 @@ const renderTopLanguages = (topLangs, options = {}) => {
     hide,
     theme,
     layout,
+    custom_title,
+    locale,
   } = options;
+
+  const i18n = new I18n({
+    locale,
+    translations: langCardLocales,
+  });
 
   let langs = Object.values(topLangs);
   let langsToHide = {};
@@ -107,12 +113,12 @@ const renderTopLanguages = (topLangs, options = {}) => {
   let width = isNaN(card_width) ? 300 : card_width;
   let height = 45 + (langs.length + 1) * 40;
 
-  let finalLayout = "";
+  let finalLayout = '';
 
   // RENDER COMPACT LAYOUT
-  if (layout === "compact") {
+  if (layout === 'compact') {
     width = width + 50;
-    height = 30 + (langs.length / 2 + 1) * 40;
+    height = 90 + Math.round(langs.length / 2) * 25;
 
     // progressOffset holds the previous language's width and used to offset the next language
     // so that we can stack them one after another, like this: [--][----][---]
@@ -129,25 +135,25 @@ const renderTopLanguages = (topLangs, options = {}) => {
 
         const output = `
           <rect
-            mask="url(#rect-mask)" 
-            data-testid="lang-progress"
-            x="${progressOffset}" 
-            y="0"
-            width="${progress}" 
-            height="8"
-            fill="${lang.color || "#858585"}"
+            mask='url(#rect-mask)' 
+            data-testid='lang-progress'
+            x='${progressOffset}' 
+            y='0'
+            width='${progress}' 
+            height='8'
+            fill='${lang.color || '#858585'}'
           />
         `;
         progressOffset += parseFloat(percentage);
         return output;
       })
-      .join("");
+      .join('');
 
     finalLayout = `
-      <mask id="rect-mask">
-        <rect x="0" y="0" width="${
+      <mask id='rect-mask'>
+        <rect x='0' y='0' width='${
           width - 50
-        }" height="8" fill="white" rx="5" />
+        }' height='8' fill='white' rx='5' />
       </mask>
       ${compactProgressBar}
       ${createLanguageTextNode({
@@ -155,25 +161,26 @@ const renderTopLanguages = (topLangs, options = {}) => {
         y: 25,
         langs,
         totalSize: totalLanguageSize,
-      }).join("")}
+      }).join('')}
     `;
   } else {
     finalLayout = FlexLayout({
       items: langs.map((lang) => {
-        return createProgressNode({
+        return createProgressTextNode({
           width: width,
           name: lang.name,
-          color: lang.color || "#858585",
+          color: lang.color || '#858585',
           progress: ((lang.size / totalLanguageSize) * 100).toFixed(2),
         });
       }),
       gap: 40,
-      direction: "column",
-    }).join("");
+      direction: 'column',
+    }).join('');
   }
 
   const card = new Card({
-    title: "Most Used Languages",
+    customTitle: custom_title,
+    defaultTitle: i18n.t('langcard.title'),
     width,
     height,
     colors: {
@@ -191,7 +198,7 @@ const renderTopLanguages = (topLangs, options = {}) => {
   `);
 
   return card.render(`
-    <svg data-testid="lang-items" x="25">
+    <svg data-testid='lang-items' x='25'>
       ${finalLayout}
     </svg>
   `);

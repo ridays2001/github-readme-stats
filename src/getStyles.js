@@ -53,7 +53,7 @@ const getStyles = ({
 }) => {
   return `
     .stat {
-      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
+      font: 600 14px 'Segoe UI', Ubuntu, 'Helvetica Neue', Sans-Serif; fill: ${textColor};
     }
     .stagger {
       opacity: 0;
@@ -67,7 +67,7 @@ const getStyles = ({
     .bold { font-weight: 700 }
     .icon {
       fill: ${iconColor};
-      display: ${!!show_icons ? "block" : "none"};
+      display: ${!!show_icons ? 'block' : 'none'};
     }
     
     .rank-circle-rim {
@@ -87,7 +87,7 @@ const getStyles = ({
       transform: rotate(-90deg);
       animation: rankAnimation 1s forwards ease-in-out;
     }
-    ${process.env.NODE_ENV === "test" ? "" : getProgressAnimation({ progress })}
+    ${process.env.NODE_ENV === 'test' ? '' : getProgressAnimation({ progress })}
   `;
 };
 

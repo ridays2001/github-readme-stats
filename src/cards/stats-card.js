@@ -1,12 +1,15 @@
+const I18n = require('../common/I18n');
+const Card = require('../common/Card');
+const icons = require('../common/icons');
+const { getStyles } = require('../getStyles');
+const { statCardLocales } = require('../translations');
 const {
   kFormatter,
-  getCardColors,
   FlexLayout,
-  encodeHTML,
-} = require("../common/utils");
-const { getStyles } = require("../getStyles");
-const icons = require("../common/icons");
-const Card = require("../common/Card");
+  clampValue,
+  measureText,
+  getCardColors,
+} = require('../common/utils');
 
 const createTextNode = ({
   icon,
@@ -20,23 +23,23 @@ const createTextNode = ({
   const kValue = kFormatter(value);
   const staggerDelay = (index + 3) * 150;
 
-  const labelOffset = showIcons ? `x="25"` : "";
+  const labelOffset = showIcons ? `x='25'` : '';
   const iconSvg = showIcons
     ? `
-    <svg data-testid="icon" class="icon" viewBox="0 0 16 16" version="1.1" width="16" height="16">
+    <svg data-testid='icon' class='icon' viewBox='0 0 16 16' version='1.1' width='16' height='16'>
       ${icon}
     </svg>
   `
-    : "";
+    : '';
   return `
-    <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
+    <g class='stagger' style='animation-delay: ${staggerDelay}ms' transform='translate(25, 0)'>
       ${iconSvg}
-      <text class="stat bold" ${labelOffset} y="12.5">${label}:</text>
+      <text class='stat bold' ${labelOffset} y='12.5'>${label}:</text>
       <text 
-        class="stat" 
-        x="${shiftValuePos ? (showIcons ? 200 : 170) : 150}" 
-        y="12.5" 
-        data-testid="${id}"
+        class='stat' 
+        x='${(showIcons ? 140 : 120) + shiftValuePos}' 
+        y='12.5' 
+        data-testid='${id}'
       >${kValue}</text>
     </g>
   `;
@@ -64,7 +67,10 @@ const renderStatsCard = (stats = {}, options = { hide: [] }) => {
     icon_color,
     text_color,
     bg_color,
-    theme = "default",
+    theme = 'default',
+    custom_title,
+    locale,
+    disable_animations = false,
   } = options;
 
   const lheight = parseInt(line_height, 10);
@@ -78,41 +84,52 @@ const renderStatsCard = (stats = {}, options = { hide: [] }) => {
     theme,
   });
 
+  const apostrophe = ['x', 's'].includes(name.slice(-1).toLocaleLowerCase())
+    ? ''
+    : 's';
+  const i18n = new I18n({
+    locale,
+    translations: statCardLocales({ name, apostrophe }),
+  });
+
   // Meta data for creating text nodes with createTextNode function
   const STATS = {
     stars: {
       icon: icons.star,
-      label: "Total Stars",
+      label: i18n.t('statcard.totalstars'),
       value: totalStars,
-      id: "stars",
+      id: 'stars',
     },
     commits: {
       icon: icons.commits,
-      label: `Total Commits${
-        include_all_commits ? "" : ` (${new Date().getFullYear()})`
+      label: `${i18n.t('statcard.commits')}${
+        include_all_commits ? '' : ` (${new Date().getFullYear()})`
       }`,
       value: totalCommits,
-      id: "commits",
+      id: 'commits',
     },
     prs: {
       icon: icons.prs,
-      label: "Total PRs",
+      label: i18n.t('statcard.prs'),
       value: totalPRs,
-      id: "prs",
+      id: 'prs',
     },
     issues: {
       icon: icons.issues,
-      label: "Total Issues",
+      label: i18n.t('statcard.issues'),
       value: totalIssues,
-      id: "issues",
+      id: 'issues',
     },
     contribs: {
       icon: icons.contribs,
-      label: "Contributed to",
+      label: i18n.t('statcard.contribs'),
       value: contributedTo,
-      id: "contribs",
+      id: 'contribs',
     },
   };
+
+  const longLocales = ['cn', 'es', 'fr', 'pt-br', 'ru', 'uk-ua', 'id', 'my', 'pl'];
+  const isLongLocale = longLocales.includes(locale) === true;
 
   // filter out hidden stats defined by user & create the text nodes
   const statItems = Object.keys(STATS)
@@ -123,31 +140,32 @@ const renderStatsCard = (stats = {}, options = { hide: [] }) => {
         ...STATS[key],
         index,
         showIcons: show_icons,
-        shiftValuePos: !include_all_commits,
-      })
+        shiftValuePos:
+          (!include_all_commits ? 50 : 20) + (isLongLocale ? 50 : 0),
+      }),
     );
 
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
   let height = Math.max(
     45 + (statItems.length + 1) * lheight,
-    hide_rank ? 0 : 150
+    hide_rank ? 0 : 150,
   );
 
   // Conditionally rendered elements
   const rankCircle = hide_rank
-    ? ""
-    : `<g data-testid="rank-circle" 
-          transform="translate(400, ${height / 2 - 50})">
-        <circle class="rank-circle-rim" cx="-10" cy="8" r="40" />
-        <circle class="rank-circle" cx="-10" cy="8" r="40" />
-        <g class="rank-text">
+    ? ''
+    : `<g data-testid='rank-circle' 
+          transform='translate(400, ${height / 2 - 50})'>
+        <circle class='rank-circle-rim' cx='-10' cy='8' r='40' />
+        <circle class='rank-circle' cx='-10' cy='8' r='40' />
+        <g class='rank-text'>
           <text
-            x="${rank.level.length === 1 ? "-4" : "0"}"
-            y="0"
-            alignment-baseline="central"
-            dominant-baseline="central"
-            text-anchor="middle"
+            x='${rank.level.length === 1 ? '-4' : '0'}'
+            y='0'
+            alignment-baseline='central'
+            dominant-baseline='central'
+            text-anchor='middle'
           >
             ${rank.level}
           </text>
@@ -165,10 +183,22 @@ const renderStatsCard = (stats = {}, options = { hide: [] }) => {
     progress,
   });
 
-  const apostrophe = ["x", "s"].includes(name.slice(-1)) ? "" : "s";
+  const calculateTextWidth = () => {
+    return measureText(custom_title ? custom_title : i18n.t('statcard.title'));
+  };
+
+  const width = hide_rank
+    ? clampValue(
+        50 /* padding */ + calculateTextWidth() * 2,
+        270 /* min */,
+        Infinity,
+      )
+    : 495;
+
   const card = new Card({
-    title: `${encodeHTML(name)}'${apostrophe} GitHub Stats`,
-    width: 495,
+    customTitle: custom_title,
+    defaultTitle: i18n.t('statcard.title'),
+    width,
     height,
     colors: {
       titleColor,
@@ -182,15 +212,17 @@ const renderStatsCard = (stats = {}, options = { hide: [] }) => {
   card.setHideTitle(hide_title);
   card.setCSS(cssStyles);
 
+  if (disable_animations) card.disableAnimations();
+
   return card.render(`
     ${rankCircle}
 
-    <svg x="0" y="0">
+    <svg x='0' y='0'>
       ${FlexLayout({
         items: statItems,
         gap: lheight,
-        direction: "column",
-      }).join("")}
+        direction: 'column',
+      }).join('')}
     </svg> 
   `);
 };

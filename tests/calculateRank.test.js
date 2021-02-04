@@ -1,8 +1,8 @@
-require("@testing-library/jest-dom");
-const calculateRank = require("../src/calculateRank");
+require('@testing-library/jest-dom');
+const calculateRank = require('../src/calculateRank');
 
-describe("Test calculateRank", () => {
-  it("should calculate rank correctly", () => {
+describe('Test calculateRank', () => {
+  it('should calculate rank correctly', () => {
     expect(
       calculateRank({
         totalCommits: 100,
@@ -12,7 +12,7 @@ describe("Test calculateRank", () => {
         stargazers: 400,
         prs: 300,
         issues: 200,
-      })
-    ).toStrictEqual({ level: "A+", score: 49.16605417270399 });
+      }),
+    ).toStrictEqual({ level: 'A+', score: 49.16605417270399 });
   });
 });
