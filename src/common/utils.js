@@ -199,6 +199,11 @@ function measureText(str, fontSize = 10) {
   );
 }
 
+const parseArray = (str) => {
+  if (!str) return [];
+  return str.split(",");
+}
+
 module.exports = {
   renderError,
   kFormatter,
