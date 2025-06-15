@@ -77,14 +77,8 @@ export default async (req, res) => {
       showStats.includes("discussions_answered"),
     );
 
-    let cacheSeconds = clampValue(
-      parseInt(cache_seconds || CONSTANTS.CARD_CACHE_SECONDS, 10),
-      CONSTANTS.TWELVE_HOURS,
-      CONSTANTS.TWO_DAY,
-    );
-    cacheSeconds = process.env.CACHE_SECONDS
-      ? parseInt(process.env.CACHE_SECONDS, 10) || cacheSeconds
-      : cacheSeconds;
+    let cacheSeconds = CONSTANTS.SIX_DAY;
+    if (username === "ridays2001") cacheSeconds = CONSTANTS.THIRTY_MINUTES;
 
     res.setHeader(
       "Cache-Control",

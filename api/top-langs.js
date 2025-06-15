@@ -69,13 +69,8 @@ export default async (req, res) => {
       count_weight,
     );
 
-    let cacheSeconds = parseInt(
-      cache_seconds || CONSTANTS.TOP_LANGS_CACHE_SECONDS,
-      10,
-    );
-    cacheSeconds = process.env.CACHE_SECONDS
-      ? parseInt(process.env.CACHE_SECONDS, 10) || cacheSeconds
-      : cacheSeconds;
+    let cacheSeconds = CONSTANTS.SIX_DAY;
+    if (username === "ridays2001") cacheSeconds = CONSTANTS.THIRTY_MINUTES;
 
     res.setHeader(
       "Cache-Control",
